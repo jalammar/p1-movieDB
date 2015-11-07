@@ -1,0 +1,17 @@
+<resources>
+    <string name="title_activity_settings">Settings</string>
+
+
+
+    <string-array name="pref_sort_movies_list_titles">
+        <item>Most popular</item>
+        <item>Highest rated</item>
+    </string-array>
+
+    <string-array name="pref_sort_movies_list_values">
+        <item>@string/most_popular_key</item>
+        <item>@string/highest_rated_key</item>
+    </string-array>
+
+
+</resources>
