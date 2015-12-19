@@ -1,4 +1,4 @@
-package com.blogjihad.nano.p1.moviedb.ui;
+package com.blogjihad.nano.p1.moviedb.ui.views;
 
 import android.content.Context;
 import android.util.AttributeSet;

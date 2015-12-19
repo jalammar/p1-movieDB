@@ -36,7 +36,7 @@
             >
 
 
-            <com.blogjihad.nano.p1.moviedb.ui.MoviePosterImageView
+            <com.blogjihad.nano.p1.moviedb.ui.views.MoviePosterImageView
                 android:id="@+id/movie_poster"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"

@@ -6,10 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 
 import com.blogjihad.nano.p1.moviedb.R;
 import com.blogjihad.nano.p1.moviedb.data.model.Movie;
+import com.blogjihad.nano.p1.moviedb.ui.views.MoviePosterImageView;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

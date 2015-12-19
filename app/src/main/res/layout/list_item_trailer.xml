@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:padding="@dimen/default_spacing_micro">
+
+    <com.blogjihad.nano.p1.moviedb.ui.views.VideoThumbnailImageView
+        android:id="@+id/thumbnail_image"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        />
+
+    <ImageView
+        android:layout_gravity="center"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@drawable/ic_youtube_logo_play_icon"
+        android:alpha="0.8"
+        />
+
+</FrameLayout>

@@ -16,5 +16,8 @@
     <string name="most_popular_key">most_popular</string>
     <string name="highest_rated_key">highest_rated</string>
 
+    <string name="trailers">Trailers</string>
+    <string name="reviews">Reviews</string>
+
 
 </resources>
