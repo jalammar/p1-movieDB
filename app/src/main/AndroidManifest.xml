@@ -36,6 +36,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.blogjihad.nano.p1.moviedb.ui.home.MovieListActivity" />
         </activity>
+        <provider
+            android:authorities="@string/content_authority"
+            android:name=".data.contentProvider.FavoriteMovieProvider"
+            android:exported="false"
+            android:syncable="true"/>
     </application>
 
 </manifest>

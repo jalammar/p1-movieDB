@@ -57,6 +57,10 @@ public class Movie implements Parcelable {
     @Expose
     private Integer voteCount;
 
+
+    public Movie(){
+
+    }
     /**
      * @return The adult
      */

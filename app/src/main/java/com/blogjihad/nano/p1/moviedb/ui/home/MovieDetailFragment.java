@@ -1,6 +1,8 @@
 package com.blogjihad.nano.p1.moviedb.ui.home;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -11,16 +13,20 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.blogjihad.nano.p1.moviedb.MoviesApplication;
 import com.blogjihad.nano.p1.moviedb.R;
 
 import com.blogjihad.nano.p1.moviedb.data.api.MovieDbApi;
+import com.blogjihad.nano.p1.moviedb.data.contentProvider.FavoriteMoviesContract;
 import com.blogjihad.nano.p1.moviedb.data.model.Movie;
 import com.blogjihad.nano.p1.moviedb.data.model.MovieVideo;
 import com.blogjihad.nano.p1.moviedb.data.model.MovieVideosResponse;
@@ -76,7 +82,7 @@ public class MovieDetailFragment extends Fragment {
     TextView movieTrailerLabel;
 
     @Bind(R.id.trailers)
-    GridLayout trailersGridLayout;
+    android.support.v7.widget.GridLayout trailersGridLayout;
 
 
     @Bind(R.id.movie_reviews_label)
@@ -85,7 +91,12 @@ public class MovieDetailFragment extends Fragment {
     @Bind(R.id.reviews)
     LinearLayout reviewsLinearLayout;
 
+
+    @Bind(R.id.fav)
+    CheckBox favoriteCheckbox;
+
     private Movie mMovie;
+    public static boolean shareTrailerFlag = false;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -123,9 +134,11 @@ public class MovieDetailFragment extends Fragment {
         }
 
         ButterKnife.bind(this, rootView);
+        shareTrailerFlag = false;
 
 
         if (mMovie != null) {
+
             title.setText(mMovie.getTitle());
             overview.setText(mMovie.getOverview());
             rating.setText(mMovie.getVoteAverage() + "/10");
@@ -136,6 +149,49 @@ public class MovieDetailFragment extends Fragment {
                     .load("http://image.tmdb.org/t/p/w500" + mMovie.getPosterPath())
                     .into(poster);
 
+            //Check if movie is favorited or not
+            boolean isFavorited = false;
+            Cursor cursor = getActivity().getContentResolver()
+                            .query(FavoriteMoviesContract.FavoriteMovieEntry.buildMoviesUri(mMovie.getId()),
+                            null,null,null,null);
+            if( cursor.getCount() != 0 ) favoriteCheckbox.setChecked(true);
+            cursor.close();
+
+            favoriteCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                    if (isChecked) {
+                        Uri mNewUri;
+
+                        // Defines an object to contain the new values to insert
+                        ContentValues mNewValues = new ContentValues();
+
+                        mNewValues.put(FavoriteMoviesContract.FavoriteMovieEntry._ID,
+                                mMovie.getId());
+                        mNewValues.put(FavoriteMoviesContract.FavoriteMovieEntry.COLUMN_TITLE,
+                                mMovie.getTitle());
+                        mNewValues.put(FavoriteMoviesContract.FavoriteMovieEntry.COLUMN_VOTE_AVERAGE,
+                                mMovie.getVoteAverage());
+                        mNewValues.put(FavoriteMoviesContract.FavoriteMovieEntry.COLUMN_VOTE_COUNT,
+                                mMovie.getVoteCount());
+                        mNewValues.put(FavoriteMoviesContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE,
+                                mMovie.getReleaseDate());
+                        mNewValues.put(FavoriteMoviesContract.FavoriteMovieEntry.COLUMN_POSTER_PATH,
+                                mMovie.getPosterPath());
+                        mNewValues.put(FavoriteMoviesContract.FavoriteMovieEntry.COLUMN_OVERVIEW,
+                                mMovie.getOverview());
+
+                        mNewUri = getActivity()
+                                .getContentResolver()
+                                .insert(FavoriteMoviesContract.FavoriteMovieEntry.CONTENT_URI, mNewValues);
+                    }
+                    else{
+                        getActivity()
+                                .getContentResolver()
+                                .delete(FavoriteMoviesContract.FavoriteMovieEntry.buildMoviesUri(mMovie.getId()), null, null);
+                    }
+                }
+            });
 
             //                  TRAILERS
             // Get Movie Trailers (Only trailers specifically. No teasers or featurettes)
@@ -157,30 +213,23 @@ public class MovieDetailFragment extends Fragment {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Observer<MovieVideo>() {
 
+
                         @Override
                         public void onCompleted() {
-                            Log.d(TAG, "getMovieTrailers onCompleted ");
-
                             if (trailersGridLayout.getChildCount() > 0) {
                                 movieTrailerLabel.setVisibility(View.VISIBLE);
                                 trailersGridLayout.setVisibility(View.VISIBLE);
                             }
 
+
                         }
-
-
                         @Override
                         public void onError(Throwable e) {
                             Log.d(TAG, "getMovieTrailers Error: " + e);
-
                         }
-
-
                         @Override
                         public void onNext(MovieVideo video) {
-                            Log.d(TAG, "getMovieTrailers onNext. Video: " + video.getName() + " Type: " + video.getType());
-
-                            FrameLayout imageLayoutView = (FrameLayout) LayoutInflater.from(getActivity()).inflate(R.layout.list_item_trailer, null);
+                            FrameLayout imageLayoutView = (FrameLayout) LayoutInflater.from(getActivity()).inflate(R.layout.list_item_trailer, trailersGridLayout, false);
                             VideoThumbnailImageView imageView = (VideoThumbnailImageView) imageLayoutView.findViewById(R.id.thumbnail_image);
                             Picasso.with(getActivity())
                                     .load("https://img.youtube.com/vi/" + video.getKey() + "/0.jpg")
@@ -199,6 +248,17 @@ public class MovieDetailFragment extends Fragment {
                             });
 
 
+                            // Set the intent of the SHARE button in the toolbar
+                            // Only set the first trailer, though
+                            if( !shareTrailerFlag ){
+                                String key = video.getKey();
+                                String url = "https://www.youtube.com/watch?v=" + key;
+                                Intent i = new Intent(Intent.ACTION_SEND);
+                                i.putExtra(Intent.EXTRA_TEXT, url);
+                                i.setType("text/plain");
+                                ((MovieDetailActivity) getActivity()).setShareIntent(i);
+                                shareTrailerFlag = true;
+                            }
                             trailersGridLayout.addView(imageLayoutView);
 
 

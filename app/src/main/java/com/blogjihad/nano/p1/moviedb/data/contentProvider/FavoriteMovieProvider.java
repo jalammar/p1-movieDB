@@ -112,7 +112,7 @@ public class FavoriteMovieProvider extends ContentProvider{
                 long _id = db.insert(FavoriteMoviesContract.FavoriteMovieEntry.TABLE_FAVORITE_MOVIES, null, values);
                 // insert unless it is already contained in the database
                 if (_id > 0) {
-                    returnUri = FavoriteMoviesContract.FavoriteMovieEntry.buildFlavorsUri(_id);
+                    returnUri = FavoriteMoviesContract.FavoriteMovieEntry.buildMoviesUri(_id);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into: " + uri);
                 }
@@ -143,12 +143,10 @@ public class FavoriteMovieProvider extends ContentProvider{
                         FavoriteMoviesContract.FavoriteMovieEntry.TABLE_FAVORITE_MOVIES + "'");
                 break;
             case FAVORITE_MOVIE_WITH_ID:
+
                 numDeleted = db.delete(FavoriteMoviesContract.FavoriteMovieEntry.TABLE_FAVORITE_MOVIES,
                         FavoriteMoviesContract.FavoriteMovieEntry._ID + " = ?",
                         new String[]{String.valueOf(ContentUris.parseId(uri))});
-                // reset _ID
-                db.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = '" +
-                        FavoriteMoviesContract.FavoriteMovieEntry.TABLE_FAVORITE_MOVIES + "'");
 
                 break;
             default:

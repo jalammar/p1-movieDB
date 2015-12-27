@@ -6,11 +6,13 @@
     <string-array name="pref_sort_movies_list_titles">
         <item>Most popular</item>
         <item>Highest rated</item>
+        <item>Favorites</item>
     </string-array>
 
     <string-array name="pref_sort_movies_list_values">
         <item>@string/most_popular_key</item>
         <item>@string/highest_rated_key</item>
+        <item>@string/favorites_key</item>
     </string-array>
 
 

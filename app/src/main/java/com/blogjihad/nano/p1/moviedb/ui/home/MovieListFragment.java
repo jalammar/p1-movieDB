@@ -2,6 +2,7 @@ package com.blogjihad.nano.p1.moviedb.ui.home;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -23,11 +24,13 @@ import com.blogjihad.nano.p1.moviedb.MoviesApplication;
 import com.blogjihad.nano.p1.moviedb.R;
 
 import com.blogjihad.nano.p1.moviedb.data.api.MovieDbApi;
+import com.blogjihad.nano.p1.moviedb.data.contentProvider.FavoriteMoviesContract;
 import com.blogjihad.nano.p1.moviedb.data.model.DiscoverMoviesResponse;
 import com.blogjihad.nano.p1.moviedb.data.model.Movie;
 import com.blogjihad.nano.p1.moviedb.ui.MovieAdapter;
 import com.blogjihad.nano.p1.moviedb.ui.home.dummy.DummyContent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.Bind;
@@ -124,20 +127,23 @@ public class MovieListFragment extends Fragment {
                 .getString(getString(R.string.pref_sort_key), "most_popular");
 
         if (sort_by.equals(getString(R.string.highest_rated_key))) {
-
+        // Highest Rated Movies
             api.getHighestRatedMovies()
                     .flatMap(new Func1<DiscoverMoviesResponse, Observable<DiscoverMoviesResponse>>() {
                         @Override
                         public Observable<DiscoverMoviesResponse> call(DiscoverMoviesResponse discoverMoviesResponse) {
-
                             return Observable.just(discoverMoviesResponse);
                         }
                     })
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(displayMoviesObserver);
+        } else if (sort_by.equals(getString(R.string.favorites_key))) {
+        // Favorite Movies
+            Observable<DiscoverMoviesResponse> favoriteMoviesList = getFavoriteMovies();
+            favoriteMoviesList.subscribe(displayMoviesObserver);
         } else {
-
+        // Most Popular Movies
             api.getPopularMovies()
                     .flatMap(new Func1<DiscoverMoviesResponse, Observable<DiscoverMoviesResponse>>() {
                         @Override
@@ -150,6 +156,44 @@ public class MovieListFragment extends Fragment {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(displayMoviesObserver);
         }
+    }
+
+    private Observable<DiscoverMoviesResponse> getFavoriteMovies() {
+
+        DiscoverMoviesResponse response = new DiscoverMoviesResponse();
+        List<Movie> movies = new ArrayList<>();
+
+        Cursor cursor =
+                getActivity().getContentResolver().query(FavoriteMoviesContract.FavoriteMovieEntry.CONTENT_URI,
+                        null,null,null,null);
+
+        // Populate the movies into the movies list
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            Movie favoriteMovie = new Movie();
+
+            favoriteMovie.setTitle(
+                    cursor.getString(
+                            cursor.getColumnIndex(
+                                    FavoriteMoviesContract.FavoriteMovieEntry.COLUMN_TITLE)));
+            favoriteMovie.setId(Integer.parseInt(cursor.getString(cursor.getColumnIndex(
+                    FavoriteMoviesContract.FavoriteMovieEntry._ID))));
+            favoriteMovie.setVoteAverage(Double.parseDouble(cursor.getString(cursor.getColumnIndex(
+                    FavoriteMoviesContract.FavoriteMovieEntry.COLUMN_VOTE_AVERAGE))));
+            favoriteMovie.setVoteCount(Integer.parseInt(cursor.getString(cursor.getColumnIndex(
+                    FavoriteMoviesContract.FavoriteMovieEntry.COLUMN_VOTE_COUNT ))));
+            favoriteMovie.setReleaseDate(cursor.getString(cursor.getColumnIndex(
+                    FavoriteMoviesContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE )));
+            favoriteMovie.setPosterPath(cursor.getString(cursor.getColumnIndex(
+                    FavoriteMoviesContract.FavoriteMovieEntry.COLUMN_POSTER_PATH )));
+            favoriteMovie.setOverview(cursor.getString(cursor.getColumnIndex(
+                    FavoriteMoviesContract.FavoriteMovieEntry.COLUMN_OVERVIEW)));
+
+            movies.add(favoriteMovie);
+        }
+
+        cursor.close();
+        response.setMovies(movies);
+        return Observable.just(response);
     }
 
     @Override

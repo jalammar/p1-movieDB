@@ -26,6 +26,7 @@ public final class FavoriteMoviesContract {
         public static final String COLUMN_VOTE_COUNT = "vote_count";
         public static final String COLUMN_RELEASE_DATE = "release_date";
         public static final String COLUMN_OVERVIEW = "overview";
+        public static final String COLUMN_POSTER_PATH = "poster_path";
 
 
         // create content uri
@@ -41,7 +42,7 @@ public final class FavoriteMoviesContract {
                 ContentResolver.CURSOR_ITEM_BASE_TYPE +"/" + CONTENT_AUTHORITY + "/" + TABLE_FAVORITE_MOVIES;
 
         // for building URIs on insertion
-        public static Uri buildFlavorsUri(long id){
+        public static Uri buildMoviesUri(long id){
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }

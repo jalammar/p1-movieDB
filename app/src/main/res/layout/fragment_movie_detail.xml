@@ -122,7 +122,8 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Title"
                 android:visibility="invisible"/>
 
-            <GridLayout
+            <android.support.v7.widget.GridLayout
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/trailers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -130,7 +131,7 @@
 
                 android:layout_marginLeft="12dp"
                 android:layout_marginRight="12dp"
-                android:columnCount="2"
+                app:columnCount="2"
                 android:visibility="invisible" />
 
 
